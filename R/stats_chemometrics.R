@@ -269,7 +269,7 @@ PlotPCA2DScore <- function(mSetObj=NA, imgName, format="png", dpi=72, width=NA, 
       if(length(uniq.cols) == 1){
         points(pc1, pc2, pch=pchs, col=cols, cex=1.0);
       }else{
-        if(grey.scale == 1 | (exists("shapeVec") && all(shapeVec>0))){
+        if(grey.scale == 1 | (exists("shapeVec") && all(shapeVec>=0))){
           points(pc1, pc2, pch=pchs, col=adjustcolor(cols, alpha.f = 0.4), cex=1.8);
         }else{
           points(pc1, pc2, pch=21, bg=adjustcolor(cols, alpha.f = 0.4), cex=2);
@@ -718,7 +718,7 @@ PlotPLS2DScore <- function(mSetObj=NA, imgName, format="png", dpi=72, width=NA, 
     if (length(uniq.cols) == 1) {
       points(lv1, lv2, pch=pchs, col=cols, cex=1.0);
     } else {
-      if(grey.scale == 1 | (exists("shapeVec") && all(shapeVec>0))){
+      if(grey.scale == 1 | (exists("shapeVec") && all(shapeVec>=0))){
         points(lv1, lv2, pch=pchs, col=adjustcolor(cols, alpha.f = 0.4), cex=1.8);
       }else{
         points(lv1, lv2, pch=21, bg=adjustcolor(cols, alpha.f = 0.4), cex=2);
@@ -925,7 +925,7 @@ PlotPLSLoading <- function(mSetObj=NA, imgName, format="png", dpi=72, width=NA, 
 #'McGill University, Canada
 #'License: GNU GPL (>= 2)
 #'@export
-PLSDA.CV <- function(mSetObj=NA, methodName="T", compNum=GetDefaultPLSCVComp(), choice="Q2"){
+PLSDA.CV <- function(mSetObj=NA, methodName="T", compNum=GetDefaultPLSCVComp(mSetObj), choice="Q2"){
   
   mSetObj <- .get.mSet(mSetObj);
   
@@ -1392,13 +1392,12 @@ OPLSR.Anal<-function(mSetObj=NA, reg=FALSE){
   datmat <- as.matrix(mSetObj$dataSet$norm);
   cv.num <- min(7, dim(mSetObj$dataSet$norm)[1]-1); 
   
-  if(.on.public.web){ # this is done by R microservice
-      opls.in <- list(datmat=datmat, cls=cls, predI=1, permI=0, orthoI=NA, crossvalI=cv.num);
-      saveRDS(opls.in, "opls_in.rds");
-      return(.set.mSet(mSetObj));
+  if(.on.public.web){
+    compiler::loadcmp("../../rscripts/metaboanalystr/stats_opls.Rc");    
   }
-
-  mSetObj$analSet$oplsda <- perform_opls(datmat, cls, predI=1, permI=0, orthoI=NA, crossvalI=cv.num);
+  my.res <- perform_opls(datmat, cls, predI=1, permI=0, orthoI=NA, crossvalI=cv.num);
+  
+  mSetObj$analSet$oplsda <- my.res;
   score.mat <- cbind(mSetObj$analSet$oplsda$scoreMN[,1], mSetObj$analSet$oplsda$orthoScoreMN[,1]);
   colnames(score.mat) <- c("Score (t1)","OrthoScore (to1)");
   write.csv(signif(score.mat,5), row.names=rownames(mSetObj$dataSet$norm), file="oplsda_score.csv");
@@ -1508,7 +1507,7 @@ PlotOPLS2DScore<-function(mSetObj=NA, imgName, format="png", dpi=72, width=NA, i
     if (length(uniq.cols) == 1) {
       points(lv1, lv2, pch=pchs, col=cols, cex=1.0);
     } else {
-      if(grey.scale == 1 | (exists("shapeVec") && all(shapeVec>0))){
+      if(grey.scale == 1 | (exists("shapeVec") && all(shapeVec>=0))){
         points(lv1, lv2, pch=pchs, col=adjustcolor(cols, alpha.f = 0.4), cex=1.8);
       }else{
         points(lv1, lv2, pch=21, bg=adjustcolor(cols, alpha.f = 0.4), cex=2);
@@ -1706,19 +1705,17 @@ OPLSDA.Permut<-function(mSetObj=NA, num=100){
   
   datmat <- as.matrix(mSetObj$dataSet$norm);
   cv.num <- min(7, dim(mSetObj$dataSet$norm)[1]-1); 
-
-  if(.on.public.web){ # this is done by R microservice
-      opls.in <- list(datmat=datmat, cls=cls, predI=1, permI=num, orthoI=NA, crossvalI=cv.num);
-      saveRDS(opls.in, "opls_in.rds");
-      return(.set.mSet(mSetObj));
-  }
   
-  perm.res <- perform_opls(datmat,cls, predI=1, orthoI=NA, permI=num, crossvalI=cv.num);
-  r.vec <- perm.res$suppLs[["permMN"]][, "R2Y(cum)"];
-  q.vec <- perm.res$suppLs[["permMN"]][, "Q2(cum)"];
+  if(.on.public.web){
+    compiler::loadcmp("../../rscripts/metaboanalystr/stats_opls.Rc");    
+  }
+  my.res <- perform_opls(datmat,cls, predI=1, orthoI=NA, permI=num, crossvalI=cv.num);
+  
+  r.vec <- my.res$suppLs[["permMN"]][, "R2Y(cum)"];
+  q.vec <- my.res$suppLs[["permMN"]][, "Q2(cum)"];
   
   # note, actual permutation number may be adjusted in public server
-  perm.num <- perm.res$suppLs[["permI"]];
+  perm.num <- my.res$suppLs[["permI"]];
 
   mSetObj$analSet$oplsda$perm.res <- list(r.vec=r.vec, q.vec=q.vec, perm.num=perm.num);
   return(.set.mSet(mSetObj));
@@ -1836,29 +1833,25 @@ SPLSR.Anal <- function(mSetObj=NA, comp.num, var.num, compVarOpt, validOpt="Mfol
     }
   }
 
-  mSetObj <- .get.mSet(mSetObj);  
+    mSetObj <- .get.mSet(mSetObj);  
   
-  # note, standardize the cls, to minimize the impact of categorical to numerical impact
-  cls <- scale(as.numeric(mSetObj$dataSet$cls))[,1];
-  datmat <- as.matrix(mSetObj$dataSet$norm);
-
-  if(.on.public.web){ # this is done by R microservice
-      spls.in <- list(datmat=datmat, cls=cls, ncomp=comp.num, keepX=comp.var.nums, validOpt=validOpt);
-      saveRDS(spls.in, "spls_in.rds");
-      return(.set.mSet(mSetObj));
-  }
-
-  mSetObj$analSet$splsr <- splsda(datmat, cls, ncomp=comp.num, keepX=comp.var.nums);
-
-  # perform validation
-  res <- perf.splsda(mSetObj$analSet$splsr, dist= "centroids.dist", validation=validOpt, folds = 5);
-  mSetObj$analSet$splsr$error.rate <- res$error.rate$overall;
-
-  score.mat <- mSetObj$analSet$splsr$variates$X;
-  write.csv(signif(score.mat,5), row.names=rownames(mSetObj$dataSet$norm), file="splsda_score.csv");
-  load.mat <- score.mat <- mSetObj$analSet$splsr$loadings$X;
-  write.csv(signif(load.mat,5), file="splsda_loadings.csv");
-  return(.set.mSet(mSetObj));
+    # note, standardize the cls, to minimize the impact of categorical to numerical impact
+    cls <- scale(as.numeric(mSetObj$dataSet$cls))[,1];
+    datmat <- as.matrix(mSetObj$dataSet$norm);
+    if(.on.public.web){
+        compiler::loadcmp("../../rscripts/metaboanalystr/stats_spls.Rc");    
+    }
+    my.res <- splsda(datmat, cls, ncomp=comp.num, keepX=comp.var.nums);
+    # perform validation
+    perf.res <- perf.splsda(my.res, dist= "centroids.dist", validation=validOpt, folds = 5);
+    my.res$error.rate <- perf.res$error.rate$overall;
+    
+    mSetObj$analSet$splsr <- my.res;
+    score.mat <- mSetObj$analSet$splsr$variates$X;
+    write.csv(signif(score.mat,5), row.names=rownames(mSetObj$dataSet$norm), file="splsda_score.csv");
+    load.mat <- score.mat <- mSetObj$analSet$splsr$loadings$X;
+    write.csv(signif(load.mat,5), file="splsda_loadings.csv");
+    return(.set.mSet(mSetObj));
 }
 
 #'Plot SPLS-DA
@@ -2012,7 +2005,7 @@ PlotSPLS2DScore <- function(mSetObj=NA, imgName, format="png", dpi=72, width=NA,
     if (length(uniq.cols) == 1) {
       points(lv1, lv2, pch=pchs, col=cols, cex=1.0);
     } else {
-      if(grey.scale == 1 | (exists("shapeVec") && all(shapeVec>0))){
+      if(grey.scale == 1 | (exists("shapeVec") && all(shapeVec>=0))){
         points(lv1, lv2, pch=pchs, col=adjustcolor(cols, alpha.f = 0.4), cex=1.8);
       }else{
         points(lv1, lv2, pch=21, bg=adjustcolor(cols, alpha.f = 0.4), cex=2);
