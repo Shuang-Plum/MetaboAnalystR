@@ -4,7 +4,8 @@
 \alias{Predict.class}
 \title{Get predicted class probability}
 \usage{
-Predict.class(x.train, y.train, x.test, clsMethod = "pls", lvNum, imp.out = F)
+Predict.class(x.train, y.train, x.test, clsMethod = "pls", lvNum,
+  imp.out = F)
 }
 \arguments{
 \item{x.train}{Input the x training samples}

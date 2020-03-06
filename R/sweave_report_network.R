@@ -108,9 +108,15 @@ CreateNetworkExplorerInputDoc <- function(mSetObj=NA){
 #'License: GNU GPL (>= 2)
 #'@export
 CreateNetworkNameMapTable <- function(mSetObj=NA){
+  
   mSetObj <- .get.mSet(mSetObj);
+  
   namemapped <- mSetObj$dataSet$map.table;
-  print(xtable::xtable(namemapped, caption="Compound Name Mapping"), table.placement="!h", caption.placement="top", size="\\scriptsize");  
+  
+  colnames(namemapped) <- c("Query", "Match", "HMDB", "PubChem", "KEGG", "Comment");
+  
+  print(xtable::xtable(namemapped, caption="Compound Name Mapping"), table.placement="!h", caption.placement="top", size="\\scriptsize");
+  
 }
 
 #'Create a x-table for gene name mapping

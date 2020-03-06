@@ -211,19 +211,6 @@ Normalization <- function(mSetObj=NA, rowNorm, transNorm, scaleNorm, ref=NULL, r
   mSetObj$dataSet$scale.method <- scalenm;
   mSetObj$dataSet$combined.method <- FALSE;
   mSetObj$dataSet$norm.all <- NULL; # this is only for biomarker ROC analysis
-  processedObj <- list();#for omicsanalyst
-  processedObj$name <- "met_t_omicsanalyst.json"
-  processedObj$type <- "met.t"
-  processedObj$data.proc <- as.matrix(t(mSetObj$dataSet$norm))
-  processedObj$feature.nms <- rownames(processedObj$data.proc)
-  processedObj$sample.nms <- colnames(processedObj$data.proc)
-  meta = data.frame(Condition = mSetObj$dataSet$cls)
-  rownames(meta) <-  colnames(processedObj$data.proc)
-  processedObj$meta <- meta
-  library(RJSONIO)
-  sink(processedObj$name);
-  cat(toJSON(processedObj));
-  sink();
   return(.set.mSet(mSetObj));
 }
 
@@ -633,11 +620,17 @@ GetRandomSubsetIndex<-function(total, sub.num = 50){
 
 # Test if data require genefilter version 
 # if so, then microservice will be used
-RequireFastUnivTests <- function(mSetObj=NA){
+RequireFastT <- function(mSetObj=NA){
   mSetObj <- .get.mSet(mSetObj);
   if(ncol(mSetObj$dataSet$norm) < 1000){
-        return(FALSE);
+        return(0);
   }else{
-        return(TRUE);
+        return(1);
   }
+}
+
+PrepareFastT <- function(mSetObj=NA){
+  mSetObj <- .get.mSet(mSetObj);
+  tt.in <- list(data=t(as.matrix(mSetObj$dataSet$norm)), cls=mSetObj$dataSet$cls);
+  saveRDS(tt.in, "fastt_in.rds");
 }

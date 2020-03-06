@@ -38,15 +38,6 @@
 
 InitDataObjects <- function(data.type, anal.type, paired=FALSE){
   
-  if(!.on.public.web){
-    if(exists("mSet")){
-      mSetObj <- .get.mSet(mSet);
-      mSetObj$dataSet$type <- data.type;
-      mSetObj$analSet$type <- anal.type;
-      return(.set.mSet(mSetObj));
-    }
-  }
-  
   dataSet <- list();
   dataSet$type <- data.type;
   dataSet$design.type <- "regular"; # one factor to two factor
@@ -85,34 +76,11 @@ InitDataObjects <- function(data.type, anal.type, paired=FALSE){
     # disable parallel prcessing for public server
     library(BiocParallel);
     register(SerialParam());
-  }else{
-    if("stat" %in% anal.type | "msetqea" %in% anal.type | "pathqea" %in% anal.type | "roc" %in% anal.type)
-    # start Rserve engine for Rpackage
-    load_Rserve();
   }
   
   # plotting required by all
   Cairo::CairoFonts(regular="Arial:style=Regular",bold="Arial:style=Bold",italic="Arial:style=Italic",bolditalic = "Arial:style=Bold Italic",symbol = "Symbol")
   
-  # sqlite db path for gene annotation
-  if(file.exists("/home/glassfish/sqlite/")){ #.on.public.web
-     url.pre <- "/home/glassfish/sqlite/";
-  }else if(file.exists("/home/jasmine/Downloads/sqlite/")){ #jasmine's local
-     url.pre <- "/home/jasmine/Downloads/sqlite/";
-  }else if(file.exists("/home/soufanom/Documents/Projects/Lechang/gene-id-mapping/")){ # soufan local
-     url.pre <- "/home/soufanom/Documents/Projects/Lechang/gene-id-mapping/";
-  }else if(file.exists("~/Documents/Projects/gene-id-mapping/")){
-     url.pre <- "~/Documents/Projects/gene-id-mapping/"
-  }else if(file.exists("/Users/xia/Dropbox/sqlite/")){ # xia local
-     url.pre <- "/Users/xia/Dropbox/sqlite/";
-  }else if(file.exists("/home/zzggyy/Downloads/netsqlite/")){
-        url.pre <<-"/home/zzggyy/Downloads/netsqlite/"; #zgy local)
-  }else{
-    url.pre <- paste0(dirname(system.file("database", "sqlite/GeneID_25Species_JE/", package="MetaboAnalystR")), "/")
-  }
-
-  gene.sqlite.path <<- url.pre;
-
   print("MetaboAnalyst R objects initialized ...");
   return(.set.mSet(mSetObj));
 }
@@ -136,16 +104,10 @@ SetDesignType <-function(mSetObj=NA, design){
 #'@param cmd Commands 
 #'@export
 RecordRCommand <- function(mSetObj=NA, cmd){
-  #write(cmd, file = "Rhistory.R", append = TRUE);
+  write(cmd, file = "Rhistory.R", append = TRUE);
   mSetObj <- .get.mSet(mSetObj); 
   mSetObj$cmdSet <- c(mSetObj$cmdSet, cmd);
   return(.set.mSet(mSetObj));
-}
-
-SaveRCommands <- function(mSetObj=NA){
-  mSetObj <- .get.mSet(mSetObj); 
-  cmds <- paste(mSetObj$cmdSet, collapse="\n");
-  write(cmds, file = "Rhistory.R", append = FALSE);
 }
 
 #'Export R Command History
@@ -415,7 +377,7 @@ Read.TextData <- function(mSetObj=NA, filePath, format="rowu", lbl.type="disc"){
 #'License: GNU GPL (>= 2)
 #'@export
 
-Read.PeakList<-function(mSetObj=NA, foldername="upload"){
+Read.PeakList<-function(mSetObj=NA, foldername){
   mSetObj <- .get.mSet(mSetObj);
 
   if(.on.public.web){
@@ -780,8 +742,8 @@ GetMetaCheckMsg <- function(mSetObj=NA){
 #'License: GNU GPL (>= 2)
 #'@export
 #'
-PlotCmpdSummary <- function(mSetObj=NA, cmpdNm, format="png", dpi=72, width=NA){
-
+PlotCmpdSummary<-function(mSetObj=NA, cmpdNm, format="png", dpi=72, width=NA){
+  
   mSetObj <- .get.mSet(mSetObj);
   
   if(.on.public.web){
@@ -820,10 +782,10 @@ PlotCmpdSummary <- function(mSetObj=NA, cmpdNm, format="png", dpi=72, width=NA){
     axp=c(min(pt), max(pt[pt <= max(rg)]),length(pt[pt <= max(rg)]) - 1);
     
     # ggplot alternative
-    col <- unique(GetColorSchema(mSetObj));
+    col <- unique(GetColorSchema(mSetObj))
     
     df.orig <- data.frame(value = as.vector(mns), name = levels(mSetObj$dataSet$cls), up = as.vector(ups), down = as.vector(dns))
-    p.orig <- ggplot(df.orig, aes(x = name, y = value, fill = name)) + geom_bar(stat = "identity", colour = "black") + theme_bw()
+    p.orig <- ggplot(df.orig, aes(x = name, y = value, fill = name)) + geom_bar(stat = "identity") + theme_bw()
     p.orig <- p.orig + scale_y_continuous(breaks=pt, limits = range(pt)) + ggtitle("Original Conc.")
     p.orig <- p.orig + theme(plot.title = element_text(size = 11, hjust=0.5)) + theme(axis.text.x = element_text(angle=90, hjust=1))
     p.orig <- p.orig + theme(axis.title.x = element_blank(), axis.title.y = element_blank(), legend.position = "none")
@@ -898,12 +860,7 @@ PlotCmpdSummary <- function(mSetObj=NA, cmpdNm, format="png", dpi=72, width=NA){
     print(p.time)
     dev.off()
   }
-  
-  if(.on.public.web){
-    return(imgName);
-  }else{
-    return(.set.mSet(mSetObj));
-  }
+  return(imgName);
 }
 
 #' Read RDS files from the internet
@@ -1211,15 +1168,4 @@ SetOrganism <- function(mSetObj=NA, org){
 }
 
 
-convertPNG2PDF <- function(filenm){
-  library(png)
-  
-  nm <- strsplit(filenm, "[.]")[[1]][1]
-  img <- readPNG(filenm)
 
-  pdf(paste0(nm, ".pdf"))
-  grid::grid.raster(img)
-  dev.off()  
-  
-  return(1)
-}

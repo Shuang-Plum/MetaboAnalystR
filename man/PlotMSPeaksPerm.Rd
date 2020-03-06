@@ -4,14 +4,8 @@
 \alias{PlotMSPeaksPerm}
 \title{Plot MS Peaks to Paths mummichog permutation p-values}
 \usage{
-PlotMSPeaksPerm(
-  mSetObj = NA,
-  pathway,
-  imgName,
-  format = "png",
-  dpi = 72,
-  width = NA
-)
+PlotMSPeaksPerm(mSetObj = NA, pathway, imgName, format = "png",
+  dpi = 72, width = NA)
 }
 \arguments{
 \item{mSetObj}{Input name of the created mSet Object}

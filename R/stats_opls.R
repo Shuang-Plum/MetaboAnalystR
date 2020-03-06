@@ -1,10 +1,9 @@
 # Perform OPLS
 # Orthogonal PLS functions (adapted from ropls package for web-based usage)
-# Turn off the .on.public.web for local usage
 # Jeff Xia \email{jeff.xia@mcgill.ca}
 # McGill University, Canada
 # License: GNU GPL (>= 2)
-perform_opls <- function (x, y = NULL, predI = NA, orthoI = 0, crossvalI = 7, log10L = FALSE, permI = 20, .on.public.web = TRUE,
+perform_opls <- function (x, y = NULL, predI = NA, orthoI = 0, crossvalI = 7, log10L = FALSE, permI = 20, 
                           scaleC = c("none", "center", "pareto", "standard")[4], ...) {
   xMN <- x;
   if(class(y) == "matrix"){

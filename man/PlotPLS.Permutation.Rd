@@ -4,13 +4,8 @@
 \alias{PlotPLS.Permutation}
 \title{Plot PLS-DA classification performance using different components, permutation}
 \usage{
-PlotPLS.Permutation(
-  mSetObj = NA,
-  imgName,
-  format = "png",
-  dpi = 72,
-  width = NA
-)
+PlotPLS.Permutation(mSetObj = NA, imgName, format = "png", dpi = 72,
+  width = NA)
 }
 \arguments{
 \item{mSetObj}{Input name of the created mSet Object}

@@ -4,7 +4,8 @@
 \alias{PlotDetailROC}
 \title{Plot detailed ROC}
 \usage{
-PlotDetailROC(mSetObj = NA, imgName, thresh, sp, se, dpi = 72, format = "png")
+PlotDetailROC(mSetObj = NA, imgName, thresh, sp, se, dpi = 72,
+  format = "png")
 }
 \arguments{
 \item{mSetObj}{Input the name of the created mSetObj (see InitDataObjects)}
