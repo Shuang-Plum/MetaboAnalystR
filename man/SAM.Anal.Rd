@@ -4,14 +4,8 @@
 \alias{SAM.Anal}
 \title{Perform Signifiance Analysis of Microarrays (SAM) analysis}
 \usage{
-SAM.Anal(
-  mSetObj = NA,
-  method = "d.stat",
-  paired = FALSE,
-  varequal = TRUE,
-  delta = 0,
-  imgName
-)
+SAM.Anal(mSetObj = NA, method = "d.stat", paired = FALSE,
+  varequal = TRUE)
 }
 \arguments{
 \item{mSetObj}{Input name of the created mSet Object}

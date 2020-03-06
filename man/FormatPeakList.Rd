@@ -4,13 +4,8 @@
 \alias{FormatPeakList}
 \title{Format Peak List}
 \usage{
-FormatPeakList(
-  annotPeaks,
-  annParams,
-  filtIso = TRUE,
-  filtAdducts = FALSE,
-  missPercent = 0.5
-)
+FormatPeakList(annotPeaks, annParams, filtIso = TRUE,
+  filtAdducts = FALSE, missPercent = 0.5)
 }
 \arguments{
 \item{annotPeaks}{The object created using the PerformPeakAnnotation.}

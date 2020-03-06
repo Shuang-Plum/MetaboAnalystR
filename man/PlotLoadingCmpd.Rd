@@ -4,7 +4,8 @@
 \alias{PlotLoadingCmpd}
 \title{Plot loading compounds}
 \usage{
-PlotLoadingCmpd(mSetObj = NA, cmpdNm, format = "png", dpi = 72, width = NA)
+PlotLoadingCmpd(mSetObj = NA, cmpdNm, format = "png", dpi = 72,
+  width = NA)
 }
 \arguments{
 \item{mSetObj}{Input name of the created mSet Object}
